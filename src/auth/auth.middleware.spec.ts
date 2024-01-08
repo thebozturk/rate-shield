@@ -1,14 +1,22 @@
 import { AuthMiddleware } from './auth.middleware';
-import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { Test } from '@nestjs/testing';
 
 describe('AuthMiddleware', () => {
   let authMiddleware: AuthMiddleware;
-  let jwtService: JwtService;
 
-  beforeEach(() => {
-    jwtService = new JwtService({ secret: 'test' }); // Test için basit bir secret kullanabilirsiniz
-    authMiddleware = new AuthMiddleware(jwtService);
+  beforeEach(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env',
+          isGlobal: true,
+        }),
+      ],
+      providers: [AuthMiddleware],
+    }).compile();
+    authMiddleware = moduleRef.get<AuthMiddleware>(AuthMiddleware);
   });
 
   it('should be defined', () => {
@@ -30,7 +38,7 @@ describe('AuthMiddleware', () => {
   it('should throw an error if the token is invalid', () => {
     const req: any = {
       headers: {
-        authorization: 'Bearer invalid-token',
+        authorization: 'InvalidToken',
       },
     };
     const res: any = {};
@@ -41,35 +49,16 @@ describe('AuthMiddleware', () => {
     );
   });
 
-  // Daha fazla test senaryosu ekleyebilirsiniz
-  // Örneğin, geçerli bir token ile middleware'in başarılı bir şekilde 'next()' fonksiyonunu çağırması gibi
-
-  it('should set the user on the request object if the token is valid', () => {
+  it('should call next if the token is valid', () => {
     const req: any = {
       headers: {
-        authorization: `Bearer ${jwtService.sign({ id: 1 })}`,
+        authorization: process.env.AUTH_TOKEN,
       },
     };
     const res: any = {};
     const next = jest.fn();
 
     authMiddleware.use(req, res, next);
-
-    expect(req.user).toBeDefined();
-    expect(req.user.id).toEqual(1);
-  });
-
-  it('should call the next function if the token is valid', () => {
-    const req: any = {
-      headers: {
-        authorization: `Bearer ${jwtService.sign({ id: 1 })}`,
-      },
-    };
-    const res: any = {};
-    const next = jest.fn();
-
-    authMiddleware.use(req, res, next);
-
-    expect(next).toHaveBeenCalled();
+    expect(next).toBeCalled();
   });
 });
