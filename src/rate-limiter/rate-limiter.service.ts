@@ -4,11 +4,11 @@ import Redis from 'ioredis';
 @Injectable()
 export class RateLimiterService {
   private redisClient: Redis;
-
   constructor() {
     this.redisClient = new Redis({
-      host: 'localhost',
-      port: 6379,
+      password: process.env.REDIS_PASSWORD,
+      port: Number(process.env.REDIS_PORT),
+      host: process.env.REDIS_HOST,
     })
       .on('error', (error) => {
         console.error(error);
@@ -22,26 +22,30 @@ export class RateLimiterService {
     key: string,
     limit: number,
     duration: number,
-  ): Promise<boolean> {
+  ): Promise<{ exceeded: boolean; ttl: number }> {
     const current = await this.redisClient.incr(key);
-    if (current > limit) {
-      return true;
+    if (current >= limit) {
+      const ttl = await this.redisClient.ttl(key);
+      return { exceeded: true, ttl: ttl };
     }
     if (current === 1) {
       await this.redisClient.expire(key, duration);
     }
-    return false;
+    return { exceeded: false, ttl: 0 };
   }
 
   async checkWeightedLimit(
     endpoint: string,
     key: string,
     duration: number,
-  ): Promise<boolean> {
+    limit: number,
+  ): Promise<{ exceeded: boolean; ttl: number }> {
     const weights = { '/endpoint1': 1, '/endpoint2': 2, '/endpoint3': 5 };
-    const limit =
-      parseInt(process.env.TOKEN_RATE_LIMIT, 10) / weights[endpoint];
+    const newLimit = limit * weights[endpoint];
 
-    return this.isLimitExceeded(key, limit, duration);
+    if (!weights[endpoint]) {
+      return this.isLimitExceeded(key, limit, duration);
+    }
+    return this.isLimitExceeded(key, newLimit, duration);
   }
 }

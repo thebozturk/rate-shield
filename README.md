@@ -1,73 +1,69 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Rate Shield
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Rate Shield is a robust rate-limiting project designed for Node.js applications, utilizing the NestJS framework and Redis. It is built to protect APIs from excessive use and to prevent abuse, ensuring fair resource usage across all users.
 
-## Description
+## Key Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Rate Limiting:** Enforces request limits per hour based on IP address for public routes and user tokens for private routes.
+- **Concurrency Handling:** Efficiently handles multiple concurrent requests, ensuring stability and reliability even under high traffic.
+- **Scalable Architecture:** Can work with multiple instances of the application, allowing for horizontal scaling.
 
-## Installation
+## Technologies Used
 
-```bash
-$ npm install
+- **NestJS**
+- **Redis**
+- **TypeScript**
+
+## Usage
+
+### Installation
+
+Clone the repository
+
+```sh
+git clone https://github.com/thebozturk/rate-shield.git
 ```
 
-## Running the app
+Go to the project directory
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```sh
+cd rate-shield
 ```
 
-## Test
+Install dependencies
 
-```bash
-# unit tests
-$ npm run test
+```sh
+npm install
+```
+Run the application
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```sh
+npm start
 ```
 
-## Support
+### Testing
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Run unit tests
 
-## Stay in touch
+```sh
+npm run test
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Handling Requests
 
-## License
+**Private Routes**: Limits are enforced based on user tokens. If the limit is exceeded, the server responds with a 429 Too Many Requests status code and a message indicating when to try again.
+**Public Routes**: Limits are enforced based on IP addresses with similar response behavior as private routes.
 
-Nest is [MIT licensed](LICENSE).
+### Examples
+
+**Exceeding Rate Limit**
+
+```json
+{
+  "message": "Rate limit exceeded",
+  "error": "Too Many Requests",
+  "Try_Again_After": "5 minutes"
+}
+```
